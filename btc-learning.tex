@@ -12,6 +12,25 @@
 \begin{document}
 \maketitle
 
+\section*{Motivation} % (fold)
+\label{sec:motivation}
+We are predicting how long a UTXO will stay unspent. Services in the business of providing liquidity for their customers would benefit from knowing how long a customer might leave some amount of BTC unspent.
+
+% section motivation (end)
+
+\section*{Notes} % (fold)
+\label{sec:notes}
+
+
+\begin{enumerate}
+\item Could do regression where output is number of blocks
+\item Could do classification with some number of output ``bins'' (some time category \eg 0-100 blocks)
+\item make histogram of outputs (each bin corresponds to an output bin with dimension of y = \# bins)
+\item will put data into postgresql database with python script (still need some packages to be installed)
+\item psql db will uniquely identify txns by hash
+\item A different python script will convert to matlab data structure using numpy
+\end{enumerate}
+
 \newpage
 \bibliography{template}
 
