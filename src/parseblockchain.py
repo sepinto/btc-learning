@@ -8,6 +8,7 @@ import codecs
 import hashlib
 import webbrowser
 from collections import namedtuple
+from bitcoin import *
 
 import sh
 from path import path
@@ -58,14 +59,21 @@ def dhash(b):
 ##############
 # Validation #
 ##############
+def getblockcount():
+    return int(sh.bitcoin_cli("--datadir="+BITCOINDIR, "getblockcount"))
+
+def getbestblockhash():
+    out = sh.bitcoin_cli("--datadir="+BITCOINDIR, "getbestblockhash")
+    return out.stdout.decode('utf-8').rstrip("\n")
+
 def getblockhash(height):
-    out = sh.bitcoin_cli("getblockhash", height)
+    out = sh.bitcoin_cli("--datadir="+BITCOINDIR, "getblockhash", height)
     return out.stdout.decode('utf-8').rstrip("\n")
 
 
 def getblock(hash):
     try:
-        foo = sh.bitcoin_cli("getblock", hash).stdout.decode('utf-8')
+        foo = sh.bitcoin_cli("--datadir="+BITCOINDIR, "getblock", hash).stdout.decode('utf-8')
         out = json.loads(foo)
     except sh.ErrorReturnCode_5:
         out = None
