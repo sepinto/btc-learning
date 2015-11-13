@@ -8,7 +8,7 @@ import codecs
 import hashlib
 import webbrowser
 from collections import namedtuple
-from bitcoin import *
+from pybitcointools import *
 
 import sh
 from path import path
@@ -94,6 +94,9 @@ def browse(block):
     url = "https://blockchain.info/block-index/%s" % block.block_header
     webbrowser.open(url)
 
+
+def TxnOutputIsSpent(txn, index):
+    len(sh.bitcoin_cli("--datadir="+BITCOINDIR, "gettxout", txn, index)) == 0
 
 ###########
 # Parsing #

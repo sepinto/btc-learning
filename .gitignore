@@ -1,6 +1,7 @@
 *.pyc
 *.mat
 *.fdb_latexmk
+*._.DS_Store
 .DS_Store
 *.pdf
 *.aux
