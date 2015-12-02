@@ -5,6 +5,8 @@ function [ t ] = btc_cell2table( cellArray )
     [numPeerSpends, type, locktime, value] = cellfun(@enumerateFields,...
         cellArray, 'UniformOutput',1);
     
-    t = table(numPeerSpends', type', locktime', value');
+    t = table(numPeerSpends', type', locktime', value',...
+        'VariableNames', {'numPeerSpends', 'type', 'locktime', 'value'});
+    
 end
 
