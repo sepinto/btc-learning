@@ -1,4 +1,7 @@
 clear all
-load data/11302015.mat
+addpath('./preprocess'); addpath('./data');
 
-T = btc_cell2table(x);
+load 11302015.mat
+D = btc_cell2mat(x);
+
+
