@@ -18,7 +18,7 @@ TXO_DATA = np.array([])
 
 
 ##################  Fcns  ##################
-def writeData(txo_data, filename):
+def writeData(filename, txo_data):
 	savemat('%s/%s'%(DATA_DIR,filename), dict(txo_data=txo_data))
 
 
@@ -56,7 +56,7 @@ def getTxnData(endTxnHash):
 				'endTxn_numIns':endTxn["vin_sz"],'endTxn_numOuts':endTxn["vout_sz"],
 				'endTxn_time':endTxn['time'],'endTxn_height':endTxn['block_height'],
 				'endTxn_locktime':endTxn['lock_time'],
-				'value':txo['value']}, 'type':txo['type'])
+				'value':txo['value'], 'type':txo['type']})
 
 	return txoData
 
