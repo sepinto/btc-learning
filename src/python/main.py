@@ -6,7 +6,7 @@ from urllib2 import Request, urlopen, URLError
 from time import sleep
 
 COINBASE_HASH = "0000000000000000000000000000000000000000000000000000000000000000"
-
+DATA_DIR = '../data'
 
 def getNTxnHashesBeforeHeight(N, height):
 	txn_ctr = 0
@@ -75,7 +75,7 @@ if __name__=="__main__":
 			if ctr % 10 == 0:
 				print "%d txn(s) collected with %d errors..." % (len(input_data), err_cnt)
 			if ctr % 200  == 0 and len(input_data) > 0:
-				savemat('%d.mat'%(len(input_data)), dict(x=input_data, y=output_data))
+				savemat('%s/%d.mat'%(DATA_DIR,len(input_data)), dict(x=input_data, y=output_data))
 				print "wrote %d points to .mat file" % (len(input_data))
 			sleep(sleep_time)
 		except Exception, e:
@@ -86,4 +86,4 @@ if __name__=="__main__":
 				break	
 			sleep(1800)
 	print("total errors = " + str(err_cnt))
-	savemat('big.mat', dict(x=input_data, y=output_data))
+	savemat('%s/out.mat'%DATA_DIR, dict(x=input_data, y=output_data))
