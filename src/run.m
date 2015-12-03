@@ -1,4 +1,4 @@
-addpath('data'); addpath('preprocess'); addpath('learn');
+addpath('data'); addpath('preprocess'); addpath('train');
 
 %% Load
 load new_data
@@ -7,7 +7,7 @@ load new_data
 [x, y] = raw2ready(txo_data);
 
 %% Train
-svmModel = svmLearn(x, y);
+svmModel = svm(x, y);
 % linRegModel = linRegLearn(x,y);
 % ... etc
 

@@ -1,4 +1,4 @@
-function model = svmtrain( x, y )
+function model = svm( x, y )
 %SVMTRAIN train a model using libsvm
 
 C = max(y) - min(y);
