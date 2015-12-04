@@ -1,5 +1,6 @@
-function [ dist ] = xvalidation10( x,y, mdltrain )
-% 10-fold cross validation
+function [ dist ] = kfoldValidation( k , x,y, mdltrain, mdlPredict )
+% k-fold cross validation
+%   k - number of folds to use
 %   x - training data features
 %   y - training data output
 %   mdltrain - function handle to model training that takes x and y, and
@@ -9,10 +10,10 @@ perm = randperm(size(x,1));
 x = x(perm, :);
 y = y(perm);
 
-foldSize = floor(size(x,1)/10);
-dist = zeros(10, foldSize);
+foldSize = floor(size(x,1)/k);
+dist = zeros(k, foldSize);
 
-for i = 1:10
+for i = 1:k
     % Indices corresponding to particular fold
     subsetTest = (i-1)*foldSize + 1 : i*foldSize;
 
@@ -24,7 +25,7 @@ for i = 1:10
     ytrain = y; ytrain(subsetTest,:) = [];
 
     % Create model from training subset
-    [mdl, mdlPredict] = mdltrain( xtrain, ytrain);
+    mdl = mdltrain( xtrain, ytrain);
     
     % Predict new y's from new x's in test subset
     ypred = zeros(size(xtest,1),1);

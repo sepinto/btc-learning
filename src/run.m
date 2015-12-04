@@ -1,15 +1,20 @@
 addpath('data'); addpath('preprocess'); addpath('train');
+addpath('validation');
 
 %% Load
-load new_data
+load 12022015.mat
 
 %% Preprocess
 [x, y] = raw2ready(txo_data);
 
 %% Train
-svmModel = svm(x, y);
-% linRegModel = linRegLearn(x,y);
+%svmModel = svm(x, y);
+%[linRegModel, lrPredict] = trainLinReg(x,y);
 % ... etc
 
 %% Validate
-% ....something
+
+%for lr
+xlr = x; xlr(:,5:6) = [];
+[lrTrain, lrTest] = trainLinReg('off');
+kfoldValidation(10, xlr, y, lrTrain, lrTest);

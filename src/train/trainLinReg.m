@@ -1,21 +1,13 @@
-function [lrModel , lrTest ] = trainLinReg( x, y )
+function [lrTrain , lrTest] = trainLinReg( robustopts )
 % Train linear regression using Matlab Toolbox
-%rank(full(x));
-%svd(full(x));
-lrModel = fitlm(x,y, 'CategoricalVars', [1]);
-%lrModel = fitlm(x,y);
+%   Can add parameters to training algorithm in the arguments here that
+%   will be reflected in the lrTrain function handle that is returned
+%   x - features for training data
+%   y - classifications for training data
 
-lrTest = @testLinReg;
 
-end
-
-function [y] = testLinReg( x, lrModel)
-% Outputs a result of linear regression model, lrModel, run on new test
-% point with features x
-%   x       - row of features to run on
-%   lrModel - linreg model from trainLinReg
-
-y = lrModel.predict(x);
+lrTrain = @(x,y) fitlm(x,y, 'CategoricalVars', 1, 'RobustOpts', robustopts);
+lrTest  = @(x,lrmdl) lrmdl.predict(x);
 
 end
 
