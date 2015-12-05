@@ -1,10 +1,10 @@
-addpath('data'); addpath('preprocess'); addpath('train');
-addpath('validation');
+addpath(genpath('.'))
 
 %% Load
 load 12022015.mat
 
 %% Preprocess
+
 [x, y] = raw2ready(txo_data);
 
 %% Train
