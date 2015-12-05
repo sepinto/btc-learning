@@ -12,26 +12,121 @@
 \begin{document}
 \maketitle
 
-\section*{Motivation} % (fold)
+\section{Motivation} % (fold)
 \label{sec:motivation}
 We are predicting how long a UTXO will stay unspent. Services in the business of providing liquidity for their customers would benefit from knowing how long a customer might leave some amount of BTC unspent.
 
-% section motivation (end)
-
-\section*{Notes} % (fold)
-\label{sec:notes}
+\section{Initial Exploration}
 
 
-\begin{enumerate}
-\item Could do regression where output is number of blocks
-\item Could do classification with some number of output ``bins'' (some time category \eg 0-100 blocks)
-\item make histogram of outputs (each bin corresponds to an output bin with dimension of y = \# bins)
-\item will put data into postgresql database with python script (still need some packages to be installed)
-\item psql db will uniquely identify txns by hash
-\item A different python script will convert to matlab data structure using numpy
-\end{enumerate}
+\section{Clustering}
 
-\newpage
+\section{Classification}
+
+\section{EM for Laplacian Mixture}
+Consider a model for the set of $m$ unlabelled samples $\left\{ x^{(1)}, \dots, x^{(m)} \right\}$. Underlying each sample is a latent random variable $z^{(i)}$ with 
+\begin{equation}
+\label{z}
+z^{(i)} \sim \text{Multinomial}_k(\phi)
+\end{equation}
+and
+\begin{equation}
+\label{z}
+x^{(i)} | z^{(i)} = j \sim \text{Laplace}(\mu_j, b_j > 0) = \frac{1}{2 b_j} \exp \left( - \frac{| x^{(i)} - \mu_j |}{b_j} \right).
+\end{equation}
+As is standard with the EM derivation, we are trying to maximize the log likelihood function
+\[
+\ell \left( \theta \right) = \sum_i \log \left[ \sum_{z^{(i)}} Q_i(z^{(i)}) \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})} \right]
+\]
+with parameters $\theta = [\phi\ \mu\ b]^T$ by using a lower bound from Jensen's inequality
+\[
+\ell \left( \theta \right) \geq \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})}.
+\]
+Given some initial $\theta$, the E step creates the tightest bound possible by setting
+\[
+Q_i(z^{(i)}) = p(z^{(i)} | x^{(i)} ; \theta) = \omega_j^{(i)} = \frac{p(x^{(i)} | z^{(i)} ; \mu, b) p(z^{(i)} ; \phi)}{\sum_{l} p(x^{(i)} | z^{(i)} = l ; \mu_l, b_l) \phi_l}.
+\]
+This is straightforward to calculate. With the function $Q_i(z^{(i)})$ set, the M step is
+\[
+\theta := \argmax_{\theta} \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})}
+\]
+which, immediately removing terms that don't depend on $\theta$, is equivalent to
+\[
+\theta := \argmax_{\theta} \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \left[ p(x^{(i)} | z^{(i)} ; \mu, b) p( z^{(i)} ; \phi) \right].
+\]
+As derived in the book, we easily get
+\begin{equation}
+\label{phiUpdate}
+\phi_j := \frac{1}{m} \sum_{i=1}^{m} \omega_j^{(i)}.
+\end{equation}
+Plugging in our Laplace PDF in order to find the update rules for $\mu$ and $b$, we get
+\[
+\mu, b := \argmin_{\mu, b} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left( \frac{|x^{(i)} - \mu_j|}{b_j} + \log b_j \right)
+\]
+Note that this expression is not convex in b. $\log b_j$ is concave and $1/b_j$ is convex so the sum of the two is neither. Multiplying by 2, the equivalent expression
+\[
+\mu, b := \argmin_{\mu, b} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left(  \frac{2 |x^{(i)} - \mu_j|}{s_j} + \log b_j^2 \right)
+\]
+solves this with a change of variables $s = -b$, becoming
+\[
+\mu, s := \argmin_{\mu, s} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left(  \frac{- 2 |x^{(i)} - \mu_j|}{s_j} + \log s_j^2 \right).
+\]
+Ignoring the constraint $s \prec 0$ for one moment and just setting the derivative of this expression with respect to $s_j$ to zero gives
+\[
+\frac{\partial \left[\ \cdot\ \right]}{\partial s_j} = \sum_i \omega_j^{(i)} \left( \frac{1}{s_j} + \frac{|x^{(i)} - \mu_l|}{s_j^2} \right) = 0.
+\]
+Solving for $s_j$ yields
+\[
+s_j := - \frac{\sum_i \omega_j^{(i)} | x^{(i)} - \mu_j|}{\sum_i \omega_j^{(i)}}
+\]
+and, equivalently,
+\begin{equation}
+\label{sUpdate}
+b_j := \frac{\sum_i \omega_j^{(i)} | x^{(i)} - \mu_j|}{\sum_i \omega_j^{(i)}}.
+\end{equation}
+Note that this value will always be less than zero, so our constraint is taken care of.
+
+With $\phi$ taken care of and an expression for $b$ in hand, that leaves just 
+\[
+\mu := \argmin_\mu \sum_i \sum_j \frac{\omega_j^{(i)}}{b_j} | x^{(i)} - \mu_j |.
+\]
+Clearly the optimal $\mu_j$ does not depend on $b_j$, so we can consider the simpler expression
+\[
+\mu := \argmin_\mu \sum_i \sum_j \omega_j^{(i)} | x^{(i)} - \mu_j |.
+\]
+As with all the other parameters so far, this expression is separable with respect to elements of $\mu$. That is, we can say
+\[
+\mu_j := \argmin_{\mu_j} \sum_i \omega_j^{(i)} | x^{(i)} - \mu_j |
+\]
+Setting the partial to zero gives us
+\[
+\sum_i \omega_j^{(i)} \ones \left\{ \mu_j > x^{(i)} \right\} = \sum_i \omega_j^{(i)} \ones \left\{ \mu_j < x^{(i)} \right\}.
+\]
+ 
+
+\textbf{THIS IS INCORRECT.} See notes below from Junjie.
+
+Instead of setting the derivative to 0, you can use the sign of the derivative to determine whether the function is decreasing or increasing. For instance, you can show that f is decreasing if
+\[
+\sum \omega_j^{(i)} \ones\{\mu < x^{(i)}\} > \sum \omega_j^{(i)} \ones \{ \mu > x^{(i)} \},
+\]
+and increasing if the inequality is flipped. In fact, you can show that the function is convex so that f' is monotone and hence you can pick $\mu^\star$ to be the smallest point such that $f'(\mu)$ changes its sign (i.e. from negative to positive). Observing that
+\[
+\ones \{ \mu < x^{(i)} \} = 1- \ones \{ \mu \geq x^{(i)} \}, 
+\]
+and if the data is sorted such that $x^{(1)} \leq \dots \leq x^{(m)}$, we can set $\mu^\star = x^{(k)}$, where k is the smallest index such that 
+\[
+\sum_{i=1}^{k-1} \omega_j^{(i)} < 0.5 \sum_{i=1}^n \omega_j^{(i)},
+\]
+(i.e. the function is decreasing on the left side of $\mu^\star$), and
+\[
+\sum_{i=1}^{k} \omega_j^{(i)} 
+\geq 0.5 \sum_{i=1}^n \omega_j^{(i)},
+\]
+(i.e. the function is nondecreasing on the right side of $\mu^\star$).
+
+
+
 \bibliography{template}
 
 \end{document}
