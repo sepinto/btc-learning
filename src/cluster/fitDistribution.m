@@ -1,10 +1,15 @@
-function [ pdfFunction ] = fitDistribution( data, k )
+function [ pdfFunction, varargout ] = fitDistribution( data, k, varargin )
 %FITDISTRIBUTION Summary of this function goes here
 %   Detailed explanation goes here
-    if ~issorted(data)
-        data = sort(data);
-    end
-
+    
+    % Validate and parse input arguments
+    p = inputParser;
+    addParameter(p,'diagnostics',0);
+    parse(p,varargin{:});
+    diagnostics = p.Results.diagnostics;
+    
+    assert(issorted(data));
+    
     % k means clustering
     idx = kmeans(data,k,'distance','cityblock','emptyaction','drop');
 
@@ -36,5 +41,11 @@ function [ pdfFunction ] = fitDistribution( data, k )
     end
     
     pdfFunction = @(d) totalpdf(d, pdfs, phi);
+    
+    if diagnostics
+        varargout{1} = idx;
+        varargout{2} = phi;
+        varargout{3} = pdfs;
+    end
 end
 

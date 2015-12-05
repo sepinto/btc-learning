@@ -7,11 +7,12 @@ load 12022015.mat
 [x, y] = raw2ready(txo_data);
 
 %% Cluster and Fit Distribution
-pdf = fitDistribution(data, k); % pdf is a function handle
+% pdf = fitDistribution(y, 4); % pdf is a function handle
+[pdf, idx, phi, pdfs] = fitDistribution(y, 4, 'diagnostics', 1);
+plotCluster(y, pdf, idx, phi, pdfs, [1 2 3]);
 
-%% Define k equal-probability ranges
-granularity = 1e5;
-domain = linspace(min(y),max(y),granularity);
+%% Define l equal-probability subdomains
+% labels = label(y, pdf, 10);
 
 %% Train
 %svmModel = svm(x, y);
@@ -21,6 +22,6 @@ domain = linspace(min(y),max(y),granularity);
 %% Validate
 
 %for lr
-xlr = x; xlr(:,5:6) = [];
-[lrTrain, lrTest] = trainLinReg('off');
-kfoldValidation(10, xlr, y, lrTrain, lrTest);
+% xlr = x; xlr(:,5:6) = [];
+% [lrTrain, lrTest] = trainLinReg('off');
+% kfoldValidation(10, xlr, y, lrTrain, lrTest);
