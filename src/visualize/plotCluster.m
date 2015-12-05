@@ -24,8 +24,6 @@ set(gca,'fontsize',30)
 figure(2)
 clf
 % Fit each cluster to either Gaussian, Exponential, or Laplacian distribution
-laplacianPDF = @(x, mu, b) exp( - abs(x - mu) / b) / (2 * b);
-pdfs = cell(k,1);
 for l = 1:k
     clusterData = data(idx==l);
     phi(l) = length(clusterData) / length(data);
@@ -35,21 +33,20 @@ for l = 1:k
     hold on
     
     expFit = mle(clusterData, 'distribution', 'exp');
-    lapFit = mle(clusterData,'pdf',laplacianPDF,'start',[mean(clusterData), sqrt(var(clusterData)/2)]);
+    lapFit = mle(clusterData,'pdf',@laplacepdf,'start',[mean(clusterData), sqrt(var(clusterData)/2)]);
     normFit = mle(clusterData);
     [~, maxInd] = max([sum(log(exppdf(clusterData, expFit))),...
-        sum(log(laplacianPDF(clusterData, lapFit(1), lapFit(2)))),...
+        sum(log(laplacepdf(clusterData, lapFit(1), lapFit(2)))),...
         sum(log(normpdf(clusterData, normFit(1), normFit(2))))]);
     
     switch maxInd
         case 1
-            pdfs{l} = @(d) exppdf(d, expFit);
+            plot(domain(clusterData), exppdf(domain(clusterData), expFit))
         case 2
-            pdfs{l} = @(d) laplacianPDF(d, lapFit(1), lapFit(2));
+            plot(domain(clusterData), laplacepdf(domain(clusterData), lapFit(1), lapFit(2)))
         case 3
-            pdfs{l} = @(d) normpdf(d, normFit(1), normFit(2));
+            plot(domain(clusterData), normpdf(domain(clusterData), norm(1), norm(2)))
     end
-    plot(domain(clusterData), pdfs{l}(domain(clusterData)));
     
     set(gca,'fontsize',20)
     if l == 1
@@ -57,11 +54,13 @@ for l = 1:k
     end
 end
 
+% Try out function
+pdf = fitDistribution(data, k);
 figure(4)
 clf
 histogram(data, edges(data), 'Normalization', 'pdf')
 hold on
-plot(domain(data), totalpdf(domain(data), pdfs, phi));
+plot(domain(data), pdf(domain(data)));
 
 
 
