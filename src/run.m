@@ -15,6 +15,10 @@ load 12022015.mat
 %% Validate
 
 %for lr
+classEdges = [0 50 200 500 inf];
+numClasses = size(classEdges,2)-1;
+ydisc = discretize(y, classEdges);
 xlr = x; xlr(:,5:6) = [];
 [lrTrain, lrTest] = trainLinReg('off');
-kfoldValidation(10, xlr, y, lrTrain, lrTest);
+[mnTrain, mnPred] = mnMdl(numClasses);
+p = kfoldValidation(10, xlr, ydisc, mnTrain, mnPred);
