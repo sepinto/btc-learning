@@ -3,12 +3,10 @@ function [ x, y ] = raw2ready( txo_data )
 
 curated_data = cellfun(@curateFeatures, txo_data);
 x = btc_data2mat(curated_data);
-[btcPrice, txnVolume] = getCSVData( txo_data );
-x = sparse([x, btcPrice, txnVolume]);
+[txnVolume, btcPrices] = getCSVData( txo_data );
+x = sparse([x, txnVolume, btcPrices]);
 y = cellfun(@getLifespan, txo_data)';
 
-[y,sortIdx] = sort(y);
-x = x(sortIdx, :);
 
 end
 

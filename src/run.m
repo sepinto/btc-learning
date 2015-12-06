@@ -3,19 +3,31 @@ multinomialSize = 2; numLabels = 5;
 
 %% Load
 load 12022015.mat
+txo_data1 = txo_data;
+load 12062015.mat
+txo_data2 = txo_data;
+clear txo_data
 
 %% Preprocess
-[x, y] = raw2ready(txo_data); 
+[x1, y1] = raw2ready(txo_data1); 
+[x2, y2] = raw2ready(txo_data2); 
+
+x = [x1; x2]; y = [y1; y2];
+clear txo_data1 txo_data2 x1 x2 y1 y2
+
+[y, sortIdx] = sort(y);
+x = x(sortIdx, :);
+
 
 %% Fit to a Mixture of Laplacians (currently not useful)
 % [ pdfs, phi, varargout ] = laplacianMixture( y, 2 );
-[ laplacePdfs, laplacePhi, phiHist, muHist, bHist ] = laplacianMixture( y, multinomialSize, 'diagnostics', 1);
-plotEM( y, phiHist, muHist, bHist, 1 );
-plotMixture( y, laplacePdfs, laplacePhi, [2,3] );
+% [ laplacePdfs, laplacePhi, phiHist, muHist, bHist ] = laplacianMixture( y, multinomialSize, 'diagnostics', 1);
+% plotEM( y, phiHist, muHist, bHist, 1 );
+% plotMixture( y, laplacePdfs, laplacePhi, [2,3] );
 
 %% Fit to a Mixture of Gaussians (currently not useful)
-[ gaussPdfs, gaussPhi ] = gaussianMixture( y, multinomialSize);
-plotMixture( y, gaussPdfs, gaussPhi, [4,5] );
+% [ gaussPdfs, gaussPhi ] = gaussianMixture( y, multinomialSize);
+% plotMixture( y, gaussPdfs, gaussPhi, [4,5] );
 
 %% Cluster and Fit Distribution
 % pdf = fitDistribution(y, 4); % pdf is a function handle

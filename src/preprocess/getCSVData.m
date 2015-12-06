@@ -1,4 +1,4 @@
-function [ btcPrice, txnVolume ] = getCSVData( txo_data )
+function [ txnVolume, btcPrices ] = getCSVData( txo_data )
 %GETCSVDATA loads two downloaded csv files and retrieves bitcoin price and
 %transaction volume determined mapped from an array of timestamps (UNIX
 %time in seconds).
@@ -22,12 +22,16 @@ function [ btcPrice, txnVolume ] = getCSVData( txo_data )
         map(datenum(priceData{1}{i})) = tmp;
     end
     
-    n = length(txo_data); btcPrice = zeros(n, 1); txnVolume = zeros(n, 1);
+    n = length(txo_data); btcPrices = zeros(n, 4); txnVolume = zeros(n, 1);
     for i=1:n
         date = floor(txo_data{i}.beginTxn_time / 86400) + datenum(1970,1,1);
-        tmp = map(date);
-        btcPrice(i) = tmp.price;
-        txnVolume(i) = tmp.volume;
+        dayOf = map(date);
+        dayBefore = map(date-1);
+        twoDaysBefore = map(date-2);
+        threeDaysBefore = map(date-3);
+        btcPrices(i,:) = [threeDaysBefore.price, twoDaysBefore.price,...
+            dayBefore.price, dayOf.price];
+        txnVolume(i) = dayOf.volume;
     end
 
 end
