@@ -15,16 +15,18 @@ function [ labels, varargout ] = label( y, pdf, k, varargin)
 
     probEdges = linspace(0,1,k+1);
     %probEdges = [0 (1 - 1./exp(1:k)) 1];
-    edges = zeros(k+1,1); edges(end) = Inf;
+    domainEdges = zeros(k+1,1); domainEdges(end) = Inf;
+
     for i=2:k
-        edges(i) = domain(find(cdf >= probEdges(i), 1));
+        domainEdges(i) = domain(find(cdf >= probEdges(i), 1));
     end
-    labels = discretize(y, edges);
+    labels = discretize(y, domainEdges);
     
     if diagnostics
         varargout{1} = domain;
         varargout{2} = cdf;
-        varargout{3} = edges;
+        varargout{3} = probEdges;
+        varargout{4} = domainEdges;
     end
 end
 

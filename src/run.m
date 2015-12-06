@@ -1,21 +1,31 @@
 addpath(genpath('.'))
+multinomialSize = 2; numLabels = 5;
 
 %% Load
 load 12022015.mat
 
 %% Preprocess
-[x, y] = raw2ready(txo_data);
+[x, y] = raw2ready(txo_data); 
+
+%% Fit to a Mixture of Laplacians (currently not useful)
+% [ pdfs, phi, varargout ] = laplacianMixture( y, 2 );
+[ laplacePdfs, laplacePhi, phiHist, muHist, bHist ] = laplacianMixture( y, multinomialSize, 'diagnostics', 1);
+plotEM( y, phiHist, muHist, bHist, 1 );
+plotMixture( y, laplacePdfs, laplacePhi, [2,3] );
+
+%% Fit to a Mixture of Gaussians (currently not useful)
+[ gaussPdfs, gaussPhi ] = gaussianMixture( y, multinomialSize);
+plotMixture( y, gaussPdfs, gaussPhi, [4,5] );
 
 %% Cluster and Fit Distribution
 % pdf = fitDistribution(y, 4); % pdf is a function handle
-[pdf, idx, phi, pdfs] = fitDistribution(y, 2, 'diagnostics', 1);
-plotCluster(y, pdf, idx, phi, pdfs, [1 2 3]);
+[pdf, idx, pdfs, phi] = fitDistribution(y, multinomialSize, 'diagnostics', 1);
+plotCluster(y, pdf, idx, pdfs, phi, [6 7 8]);
 
 %% Define l equal-probability subdomains
 % labels = label(y, pdf, 10);
-numClasses = 5;
-[labels, domain, cdf, edges] = label(y,pdf,numClasses,'diagnostics',1);
-plotSubdomains(y, labels, domain, cdf, edges, [4 5]);
+[labels, domain, cdf, probEdges, domainEdges] = label(y,pdf,numLabels,'diagnostics',1);
+plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
 
 %% Train
 %svmModel = svm(x, y);

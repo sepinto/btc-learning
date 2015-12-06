@@ -44,8 +44,8 @@ function [ pdfFunction, varargout ] = fitDistribution( data, k, varargin )
     
     if diagnostics
         varargout{1} = idx;
-        varargout{2} = phi;
-        varargout{3} = pdfs;
+        varargout{2} = pdfs;
+        varargout{3} = phi;
     end
 end
 

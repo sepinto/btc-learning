@@ -1,18 +1,11 @@
-function [out] = plotCluster(data, pdf, idx, phi, pdfs, fignums)
+function [out] = plotCluster(data, pdf, idx, pdfs, phi, fignums)
     assert(length(fignums) == 3);
+    k = length(phi); histBins = 1e3; domainGranularity = 1e3;
     
-    k = length(phi);
-    edges = @(data) linspace(1, round(max(data)), 1000);
-    domain = @(data) linspace(min(data), max(data), length(data));
-
     figure(fignums(1));
     clf
-    for l=1:k
-        histogram(data(idx == l), edges(data))
-        hold on
-    end
-    hold off
-    title('histogram colored by cluster', 'fontsize', 30, 'interpreter','latex')
+    plotHistByLabel(data, idx, histEdges(data, histBins));
+    title('Histogram colored by cluster', 'fontsize', 30, 'interpreter','latex')
     set(gca,'fontsize',30) 
 
     figure(fignums(2));
@@ -21,9 +14,9 @@ function [out] = plotCluster(data, pdf, idx, phi, pdfs, fignums)
         clusterData = data(idx==l);
         
         subplot(floor(sqrt(k)), ceil(sqrt(k)), l)
-        histogram(clusterData, edges(clusterData), 'Normalization', 'pdf')
+        histogram(clusterData, histEdges(clusterData, histBins), 'Normalization', 'pdf')
         hold on
-        plot(domain(clusterData), pdfs{l}(domain(clusterData)))
+        plot(domain(clusterData, domainGranularity), pdfs{l}(domain(clusterData, domainGranularity)))
         set(gca,'fontsize',20)
         if l == 1
             title('MLE of each cluster (either Normal, Exp, or Laplace)', 'fontsize', 30, 'interpreter', 'latex')
@@ -32,9 +25,9 @@ function [out] = plotCluster(data, pdf, idx, phi, pdfs, fignums)
     
     figure(fignums(3));
     clf
-    histogram(data, edges(data), 'Normalization', 'pdf')
+    histogram(data, histEdges(data, histBins), 'Normalization', 'pdf')
     hold on
-    plot(domain(data), pdf(domain(data)));
+    plot(domain(data, domainGranularity), pdf(domain(data, domainGranularity)));
 end
     
 
