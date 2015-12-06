@@ -4,6 +4,5 @@ function out = btc_data2mat( data )
     for i=1:length(data)
         out(i,:) = struct2mat(data{i});
     end
-    out = sparse(out);
 end
 
