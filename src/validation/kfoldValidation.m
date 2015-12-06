@@ -1,4 +1,4 @@
-function [ perf_test, perf_train] = kfoldValidation( k , x,y, mdltrain, mdlPredict )
+function [ perf_test, perf_train] = kfoldValidation( k,x,y,mdltrain,mdlPredict )
 % k-fold cross validation
 %   k - number of folds to use
 %   x - training data features
@@ -12,11 +12,14 @@ y = y(perm);
 
 foldSize = floor(size(x,1)/k);
 dist = zeros(k, foldSize);
-numModels = size(mdltrain,1);
+numModels = size(mdltrain, 1);
 
 for n = 1:numModels
     ypred = zeros(k, foldSize);
     for i = 1:k
+        train = mdltrain{n};
+        classify = mdlPredict{n};
+        
         % Indices corresponding to particular fold
         subsetTest = (i-1)*foldSize + 1 : i*foldSize;
 
@@ -28,17 +31,17 @@ for n = 1:numModels
         ytrain = y; ytrain(subsetTest,:) = [];
 
         % Create model from training subset
-        mdl = mdltrain( xtrain, ytrain);
+        mdl = train( xtrain, ytrain);
 
         % Checking training error
         for j = 1:size(xtrain,1)
-           ytrain_pred(i,j) = mdlPredict(xtrain(j,:),mdl); 
+           ytrain_pred(i,j) = classify(xtrain(j,:),mdl); 
         end
         ytrain_true(i,:) = ytrain;
         % Predict new y's from new x's in test subset
         for j = 1:size(xtest,1)
 
-            ypred(i,j) = mdlPredict(xtest(j,:), mdl);
+            ypred(i,j) = classify(xtest(j,:), mdl);
         end
         ytrue(i,:) = ytest;
         display(['Fold # ' num2str(i) ' completed']);

@@ -13,7 +13,8 @@ plotCluster(y, pdf, idx, phi, pdfs, [1 2 3]);
 
 %% Define l equal-probability subdomains
 % labels = label(y, pdf, 10);
-[labels, domain, cdf, edges] = label(y,pdf,10,'diagnostics',1);
+numClasses = 5;
+[labels, domain, cdf, edges] = label(y,pdf,numClasses,'diagnostics',1);
 plotSubdomains(y, labels, domain, cdf, edges, [4 5]);
 
 %% Train
@@ -23,10 +24,15 @@ plotSubdomains(y, labels, domain, cdf, edges, [4 5]);
 
 %% Validate
 
-classEdges = [0 50 200 500 inf];
-numClasses = size(classEdges,2)-1;
-ydisc = discretize(y, classEdges);
 xlr = x; xlr(:,5:6) = [];
-[lrTrain, lrTest] = trainLinReg('off');
 [mnTrain, mnPred] = mnMdl(numClasses);
-p = kfoldValidation(10, xlr, ydisc, mnTrain, mnPred);
+[svmTrain, svmPred] = svm();
+
+mdlsTrain = {mnTrain ; svmTrain};
+mdlsPred  = {mnPred  ; svmPred};
+mdlsTrain = {svmTrain};
+mdlsPred  = {svmPred};
+
+mdlsName = {'multinomial', 'svm'};
+
+[ptest ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);

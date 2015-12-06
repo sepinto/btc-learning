@@ -13,8 +13,8 @@ function [ labels, varargout ] = label( y, pdf, k, varargin)
     cdf = cumsum(pdf(domain));
     cdf = (cdf - min(cdf)) / (max(cdf) - min(cdf)); % Normalize
 
-%     probEdges = linspace(0,1,k+1);
-    probEdges = [0 (1 - 1./exp(1:k)) 1];
+    probEdges = linspace(0,1,k+1);
+    %probEdges = [0 (1 - 1./exp(1:k)) 1];
     edges = zeros(k+1,1); edges(end) = Inf;
     for i=2:k
         edges(i) = domain(find(cdf >= probEdges(i), 1));
