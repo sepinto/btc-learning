@@ -3,9 +3,21 @@ multinomialSize = 2; numLabels = 5;
 
 %% Load
 load 12022015.mat
+txo_data1 = txo_data;
+load 12062015.mat
+txo_data2 = txo_data;
+clear txo_data
 
 %% Preprocess
-[x, y] = raw2ready(txo_data); 
+[x1, y1] = raw2ready(txo_data1); 
+[x2, y2] = raw2ready(txo_data2); 
+
+x = [x1; x2]; y = [y1; y2];
+clear txo_data1 txo_data2 x1 x2 y1 y2
+
+[y, sortIdx] = sort(y);
+x = x(sortIdx, :);
+
 
 %% Fit to a Mixture of Laplacians (currently not useful)
 % [ pdfs, phi, varargout ] = laplacianMixture( y, 2 );
