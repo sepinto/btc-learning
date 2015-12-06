@@ -1,4 +1,4 @@
-function [ mntrain, mnpredict ] = mnMdl( numClass )
+function [ mntrain, mnpredict ] = multinomial( numClass )
 % Returns training and classification funtions for the softmax regression
 % of a multinomial distribution
 %   Detailed explanation goes here
