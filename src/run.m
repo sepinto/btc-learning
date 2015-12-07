@@ -46,9 +46,8 @@ plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
 
 %% Test Different Algorithms
 
-xlr = x; xlr(:,5:6) = [];
-dummyweekday = dummyvar(xlr(:,1));
-xdummy = [dummyweekday(:,2:end) xlr(:,2:end)];
+dummyweekday = dummyvar(x(:,1));
+xdummy = [dummyweekday(:,2:end) x(:,2:end)];
 
 [mnTrain, mnPred] = multinomial(numLabels);
 [svmLinTrain, svmLinPred] = svm('linear');
@@ -57,51 +56,23 @@ xdummy = [dummyweekday(:,2:end) xlr(:,2:end)];
 [svmSigmoidTrain, svmSigmoidPred] = svm('sigmoid');
 
 
-mdlsTrain = {   mnTrain ; svmLinTrain ;
-                svmPolyTrain ; svmRadialTrain ;
-                svmSigmoidTrain};
-            
-mdlsPred  = {   mnPred  ; svmLinPred ;
-                svmPolyPred; svmRadialPred ;
-                svmSigmoidPred};
+mdlsTrain = {   mnTrain ; svmLinTrain ; svmRadialTrain};
+mdlsPred  = {   mnPred  ; svmLinPred ; svmRadialPred };
 
-mdlsName = {'multinomial', 'svm'};
+mdlsName = {'multinomial', 'svmLin', 'svmRad'};
 
-[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, {svmRadialTrain}, {svmRadialPred});
+[ptest,  ptrain] = kfoldValidation(5, xdummy, labels, {mnTrain}, {mnPred});
+%[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);
 
 %% Find best C and gamma value for radial kernel svm (coarse)
-C = [2^-5, 2^-3, 2^-1, 2^1, 2^3, 2^5];
-G = [2^-15, 2^-13, 2^-11, 2^-9, 2^-7, 2^-5];
+C = 2.^(-13:2:13);
+gamma = 2.^(-13:2:13);
 
-numC = size(C,2);
-numG = size(G,2);
+[pCorrectTest, pCorrectTrain] = ...
+    optimalSVMParameters(xdummy, labels, 'radial', C, gamma);
 
-svmRadialTrain = cell(numC,numG);
-svmRadialPred  = cell(numC,numG);
-
-for i = 1:numC
-    for j = 1:numG
-        [svmRadialTrain{i,j} , svmRadialPred{i,j}] = svm('radial', C(i), G(j));
-    end
-end
-
-[pRadTest, pRadTrain] = kfoldValidation(5, full(xdummy), labels, svmRadialTrain(:), svmRadialPred(:));
-
-for i = 1:numC
-    for j = 1:numG
-        pCorrectTest(i,j) = pRadTest( numG*(i-1)+ numG).CorrectRate;
-        pCorrectTrain(i,j) = pRadTrain( numG*(i-1)+ numG).CorrectRate;
-    end
-end
-figure; imagesc(log2(C),log2(G),pCorrectTest);
-xlabel('gamma');
-ylabel('C');
-title('Testing Correct Rate vs C and G');
-
-figure; imagesc(log2(C),log2(G),pCorrectTrain2);
-xlabel('gamma');
-ylabel('C');
-title('Training Correct Rate vs C and G');
+plotOptimalParam(pCorrectTest, C, gamma); title('Testing Correct Rate');
+plotOptimalParam(pCorrectTrain, C, gamma); title('Training Correct Rate');
 
 %% Diagnostics
 [perfTrain, perfTest] = test_vs_train_error(xdummy, labels, {svmRadialTrain}, {svmRadialPred});

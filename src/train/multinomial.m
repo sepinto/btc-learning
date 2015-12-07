@@ -8,8 +8,12 @@ function [ mntrain, mnpredict ] = multinomial( numClass )
 % mntrain = @(x,y) reshapeB(mnrfit(x, y, 'model', 'ordinal'));
 
 mntrain = @(x,y) mnrfit(x, y );
+% mnpredict = @(x,B) find( mnrval(B,x) == max(mnrval(B,x)));
+mnpredict = @(x,B) maxIndx(mnrval(B,x));
 
-mnpredict = @(x,B) find( mnrval(B,x) == max(mnrval(B,x)));
+end
 
+function maxi = maxIndx( p )
+    [~, maxi] = max(p, [], 2);
 end
 

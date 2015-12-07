@@ -14,7 +14,7 @@ switch lower(kernel_type)
         disp('Error: Kernel type did not match');
 end
 
-options = ['-s 0 -t ' kernel ];
+options = ['-q -s 0 -t ' kernel ];
 
 if(exist('C', 'var') == 1)
    options = [options [' -c ' num2str(C)]];
@@ -25,7 +25,7 @@ if(exist('gamma', 'var') == 1)
 end
     
 train = @(x,y) svmtrain(y,x, options);
-predict = @(x,mdl) svmpredict( 0, x, mdl);
+predict = @(x,mdl) svmpredict( zeros(size(x,1),1), x, mdl);
 
 % C = max(y) - min(y);
 % model = svmtrain(y, x, ['-s 3 -t 0 -c ', num2str(C)]);

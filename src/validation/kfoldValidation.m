@@ -16,6 +16,7 @@ numModels = size(mdltrain, 1);
 
 for n = 1:numModels
     ypred = zeros(k, foldSize);
+    tic
     for i = 1:k
         train = mdltrain{n};
         classify = mdlPredict{n};
@@ -34,20 +35,20 @@ for n = 1:numModels
         mdl = train( xtrain, ytrain);
 
         % Checking training error
-        for j = 1:size(xtrain,1)
-           ytrain_pred(i,j) = classify(xtrain(j,:),mdl); 
-        end
+        ytrain_pred(i,:) = classify(xtrain,mdl);
         ytrain_true(i,:) = ytrain;
+        
         % Predict new y's from new x's in test subset
-        for j = 1:size(xtest,1)
-
-            ypred(i,j) = classify(xtest(j,:), mdl);
-        end
+        ypred(i,:) = classify(xtest,mdl);
         ytrue(i,:) = ytest;
+        
         display(['Fold # ' num2str(i) ' completed']);
     end
     perf_test(n) = classperf(ytrue(:), ypred(:));
     perf_train(n) = classperf(ytrain_true(:), ytrain_pred(:));
+    t = toc;
+    display([   'Model # ' num2str(n) ' of ' num2str(size(mdltrain,1)) ...
+                ' completed in ' num2str(t) ' seconds']);
 end
 
 end

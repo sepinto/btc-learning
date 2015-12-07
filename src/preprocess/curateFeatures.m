@@ -13,13 +13,14 @@ newData.beginTxn_time = double(data.beginTxn_time) / 3600; % sec to hours
 newData.beginTxn_numIns = double(data.beginTxn_numIns);
 newData.beginTxn_numOuts = double(data.beginTxn_numOuts);
 
-newData.endTxn_weekday = unix2weekday(double(data.endTxn_time));
+%newData.endTxn_weekday = unix2weekday(double(data.endTxn_time));
 
 % If nonzero, the locktime is the first block when the txo may be redeemed.
 % THIS GUARANTEES A MINIMUM LIFESPAN. Convert it to blocks from creation.
 % Note: the max takes care of the case where its zero.
-newData.locktime = max(0,...
-    double(data.beginTxn_locktime - data.beginTxn_height));
+% Omitting because they are all 0's
+% newData.locktime = max(0,...
+%     double(data.beginTxn_locktime - data.beginTxn_height));
 newData.value = double(data.value) * 10^-8; % Satoshi to BTC
 
 % Don't need the following fields because...
