@@ -4,9 +4,9 @@ function [ x, y ] = raw2ready( txo_data )
 curated_data = cellfun(@curateFeatures, txo_data);
 x = btc_data2mat(curated_data);
 [txnVolume, btcPrices] = getCSVData( txo_data );
-x = sparse([x, txnVolume, btcPrices]);
+x = [x, txnVolume, btcPrices];
 y = cellfun(@getLifespan, txo_data)';
-
+x = sparse(x);
 
 end
 
