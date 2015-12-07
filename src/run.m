@@ -65,8 +65,11 @@ mdlsName = {'multinomial', 'svmLin', 'svmRad'};
 %[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);
 
 %% Find best C and gamma value for radial kernel svm (coarse)
-C = 2.^(-13:2:13);
+C = 2.^(-15:2:13);
 gamma = 2.^(-13:2:13);
+
+C = 2.^(-[5 3 1]);
+gamma = 2.^(-[5 3 1]);
 
 [pCorrectTest, pCorrectTrain] = ...
     optimalSVMParameters(xdummy, labels, 'radial', C, gamma);

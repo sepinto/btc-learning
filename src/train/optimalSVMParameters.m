@@ -19,8 +19,8 @@ end
 
 for i = 1:numC
     for j = 1:numG
-        pCorrectTest(i,j) = pRadTest( numG*(i-1)+ numG).CorrectRate;
-        pCorrectTrain(i,j) = pRadTrain( numG*(i-1)+ numG).CorrectRate;
+        pCorrectTest(i,j) = pRadTest( numG*(i-1)+ j).CorrectRate;
+        pCorrectTrain(i,j) = pRadTrain( numG*(i-1)+ j).CorrectRate;
     end
 end
 
