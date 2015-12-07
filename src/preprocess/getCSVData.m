@@ -25,13 +25,11 @@ function [ txnVolume, btcPrices ] = getCSVData( txo_data )
     n = length(txo_data); btcPrices = zeros(n, 4); txnVolume = zeros(n, 1);
     for i=1:n
         date = floor(txo_data{i}.beginTxn_time / 86400) + datenum(1970,1,1);
-        dayOf = map(date);
-        dayBefore = map(date-1);
-        twoDaysBefore = map(date-2);
-        threeDaysBefore = map(date-3);
-        btcPrices(i,:) = [threeDaysBefore.price, twoDaysBefore.price,...
-            dayBefore.price, dayOf.price];
-        txnVolume(i) = dayOf.volume;
+        btcPrices(i,:) = [map(date).price polyfit(-6:0,...
+            [map(date-6).price, map(date-5).price, map(date-4).price,...
+            map(date-3).price, map(date-2).price, map(date-1).price,...
+            map(date).price], 2)];
+        txnVolume(i) = map(date).volume;
     end
 
 end

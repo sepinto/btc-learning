@@ -1,5 +1,5 @@
 addpath(genpath('.'))
-multinomialSize = 2; numLabels = 5;
+multinomialSize = 2; numLabels = 10;
 
 %% Load
 load 12022015.mat
@@ -20,7 +20,7 @@ x = x(sortIdx, :);
 
 
 %% Fit to a Mixture of Laplacians (currently not useful)
-% [ pdfs, phi, varargout ] = laplacianMixture( y, 2 );
+% [ pdfs, phi, varargout ] = laplacianMixture( y, multinomialSize );
 % [ laplacePdfs, laplacePhi, phiHist, muHist, bHist ] = laplacianMixture( y, multinomialSize, 'diagnostics', 1);
 % plotEM( y, phiHist, muHist, bHist, 1 );
 % plotMixture( y, laplacePdfs, laplacePhi, [2,3] );
@@ -30,12 +30,12 @@ x = x(sortIdx, :);
 % plotMixture( y, gaussPdfs, gaussPhi, [4,5] );
 
 %% Cluster and Fit Distribution
-% pdf = fitDistribution(y, 4); % pdf is a function handle
+% pdf = fitDistribution(y, multinomialSize); % pdf is a function handle
 [pdf, idx, pdfs, phi] = fitDistribution(y, multinomialSize, 'diagnostics', 1);
 plotCluster(y, pdf, idx, pdfs, phi, [6 7 8]);
 
 %% Define l equal-probability subdomains
-% labels = label(y, pdf, 10);
+% labels = label(y, pdf, numLabels);
 [labels, domain, cdf, probEdges, domainEdges] = label(y,pdf,numLabels,'diagnostics',1);
 plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
 
@@ -49,19 +49,21 @@ plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
 dummyweekday = dummyvar(x(:,1));
 xdummy = [dummyweekday(:,2:end) x(:,2:end)];
 
-[mnTrain, mnPred] = multinomial(numLabels);
-[svmLinTrain, svmLinPred] = svm('linear');
-[svmPolyTrain, svmPolyPred] = svm('poly');
+C = 2^(-13);
+% [mnTrain, mnPred] = multinomial(numLabels);
+% [svmLinTrain, svmLinPred] = svm('linear');
+% [svmPolyTrain, svmPolyPred] = svm('poly');
 [svmRadialTrain, svmRadialPred] = svm('radial');
-[svmSigmoidTrain, svmSigmoidPred] = svm('sigmoid');
+% [svmSigmoidTrain, svmSigmoidPred] = svm('sigmoid');
 
 
-mdlsTrain = {   mnTrain ; svmLinTrain ; svmRadialTrain};
-mdlsPred  = {   mnPred  ; svmLinPred ; svmRadialPred };
+% mdlsTrain = {   mnTrain ; svmLinTrain ; svmRadialTrain};
+% mdlsPred  = {   mnPred  ; svmLinPred ; svmRadialPred };
 
-mdlsName = {'multinomial', 'svmLin', 'svmRad'};
+% mdlsName = {'multinomial', 'svmLin', 'svmRad'};
 
-[ptest,  ptrain] = kfoldValidation(5, xdummy, labels, {mnTrain}, {mnPred});
+
+[ptest,  ptrain] = kfoldValidation(5, xdummy, labels, {svmRadialTrain}, {svmRadialPred});
 %[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);
 
 %% Find best C and gamma value for radial kernel svm (coarse)
