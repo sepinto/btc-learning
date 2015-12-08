@@ -1,4 +1,4 @@
-function [perfTrain, perfTest] = test_vs_train_error( x,y, mdltrain, mdlPredict )
+function [perfTest , perfTrain ] = test_vs_train_error( x,y, mdltrain, mdlPredict )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 

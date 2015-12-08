@@ -16,6 +16,7 @@ numModels = size(mdltrain, 1);
 
 for n = 1:numModels
     ypred = zeros(k, foldSize);
+    ytrain_pred = zeros(k, (k-1)*foldSize+1);
     tic
     for i = 1:k
         train = mdltrain{n};

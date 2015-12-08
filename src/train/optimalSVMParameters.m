@@ -17,10 +17,11 @@ end
 [pRadTest, pRadTrain] = kfoldValidation(5, full(x), y, ...
                                         svmTrain(:), svmPred(:));
 
-for i = 1:numC
-    for j = 1:numG
-        pCorrectTest(i,j) = pRadTest( numG*(i-1)+ j).CorrectRate;
-        pCorrectTrain(i,j) = pRadTrain( numG*(i-1)+ j).CorrectRate;
+
+for j = 1:numG
+    for i = 1:numC
+        pCorrectTest(i,j) = pRadTest( numC*(j-1)+ i).CorrectRate;
+        pCorrectTrain(i,j) = pRadTrain( numC*(j-1)+ i).CorrectRate;
     end
 end
 

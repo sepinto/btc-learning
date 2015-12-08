@@ -65,15 +65,13 @@ C = 2^(-13);
 % mdlsName = {'multinomial', 'svmLin', 'svmRad'};
 
 
-[ptest,  ptrain] = kfoldValidation(5, xdummy, labels, {svmRadialTrain}, {svmRadialPred});
+%[ptest,  ptrain] = kfoldValidation(5, xdummy, labels, {svmRadialTrain}, {svmRadialPred});
 %[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);
 
 %% Find best C and gamma value for radial kernel svm (coarse)
-C = 2.^(-15:2:13);
-gamma = 2.^(-13:2:13);
-
-C = 2.^(-[5 3 1]);
-gamma = 2.^(-[5 3 1]);
+C = 2.^([20:0.5:22])
+gamma = 2.^([-18:0.5:-16])
+%gamma = 1/size(x,1);
 
 [pCorrectTest, pCorrectTrain] = ...
     optimalSVMParameters(xdummy, labels, 'radial', C, gamma);
@@ -82,5 +80,5 @@ plotOptimalParam(pCorrectTest, C, gamma); title('Testing Correct Rate');
 plotOptimalParam(pCorrectTrain, C, gamma); title('Training Correct Rate');
 
 %% Diagnostics
-[perfTrain, perfTest] = test_vs_train_error(xdummy, labels, {svmRadialTrain}, {svmRadialPred});
-plotDiagTrainingSet(perfTrain, perfTest);
+%[perfTrain, perfTest] = test_vs_train_error(xdummy, labels, {svmRadialTrain}, {svmRadialPred});
+%plotDiagTrainingSet(perfTrain, perfTest);
