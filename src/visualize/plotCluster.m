@@ -13,13 +13,15 @@ function [out] = plotCluster(data, pdf, idx, pdfs, phi, fignums)
     for l = 1:k
         clusterData = data(idx==l);
         
-        subplot(floor(sqrt(k)), ceil(sqrt(k)), l)
-        histogram(clusterData, histEdges(clusterData, histBins), 'Normalization', 'pdf')
+        subplot(1, k, l)
+        histogram(clusterData, histEdges(clusterData, histBins),'Normalization', 'pdf')
+        
         hold on
-        plot(domain(clusterData, domainGranularity), pdfs{l}(domain(clusterData, domainGranularity)))
+        plot(domain(clusterData, domainGranularity), pdfs{l}(domain(clusterData, domainGranularity)), 'k', 'linewidth', 2)
         set(gca,'fontsize',20)
         if l == 1
-            title('MLE of each cluster (either Normal, Exp, or Laplace)', 'fontsize', 30, 'interpreter', 'latex')
+            title('Maximum Likelihood Distribution for Each Cluster', 'fontsize', 30, 'interpreter', 'latex')
+            axis([0 2000 0 0.01])
         end
     end
     
