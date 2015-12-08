@@ -18,6 +18,8 @@ clear txo_data1 txo_data2 x1 x2 y1 y2
 [y, sortIdx] = sort(y);
 x = x(sortIdx, :);
 
+plotHistogram(y, [1 2 3]);
+
 
 %% Fit to a Mixture of Laplacians (currently not useful)
 % [ pdfs, phi, varargout ] = laplacianMixture( y, multinomialSize );
