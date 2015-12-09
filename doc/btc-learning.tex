@@ -1,6 +1,8 @@
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 \usepackage{fullpage,graphicx,psfrag,amsmath,amsfonts,verbatim}
 \usepackage[small,bf]{caption}
+\usepackage[compact]{titlesec}
+\setlength{\belowcaptionskip}{-10pt}
 
 \input defs.tex
 
@@ -13,11 +15,11 @@
 \maketitle
 
 \section{Background \& Motivation}
-The Bitcoin crypto currency~\cite{Na08}, born in 2009, still maintains its position as the most widely used and highly valued digital currency in existence. Every day sees thousands of transactions added to the blockchain. The blockchain is a global, agreed-upon ledger of every transaction that has ever occured and is continually extended as a single linked list. Each transaction in the blockchain, say Alice paying Bob 10 BTC, has one or more transaction outputs (TXO) which serve as sums of spendable BTC. These unspent sums are called \emph{Unspent Transaction Outputs} (UTXO). They remain UTXOs until the owner (Bob in our example) redeems them to pay someone else (at which time they are referred to as spent TXOs).
+The Bitcoin crypto currency~\cite{Na:08,NBF:15} is the most widely used and highly valued digital currency in existence. Every day sees thousands of transactions added to the blockchain. The blockchain is a global, agreed-upon ledger of every transaction that has ever occured and is continually extended as a single linked list. Each transaction in the blockchain, say Alice paying Bob 10 BTC, has one or more transaction outputs (TXO) which serve as sums of spendable BTC. These unspent sums are called \emph{Unspent Transaction Outputs} (UTXO). They remain UTXOs until the owner (Bob in our example) redeems them to pay someone else (at which time they are referred to as spent TXOs).
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.7\textwidth]{figures/utxo}
+\includegraphics[width=0.5\textwidth]{figures/utxo}
 \end{center}
 \caption{Illustrated Explanation of a UTXO. An arbitrary amount of time may pass before Bob spends his UTXO.}
 \label{utxo}
@@ -28,26 +30,29 @@ This project seeks to predict how long a TXO will remain unspent. More formally,
 
 
 \section{Dataset \& Features}
-One of the (many) blockchain explorers, Blockchain.info, has a public API exposing data about individual transactions as well as general Bitcoin market statistics. A python script queried Blockchain.info at a polite rate to gather 13146 training samples and then exported the data to a Matlab readable format. A Matlab script then curated the data into a matrix with the features listed in figure~\ref{features}.
+One of the (many) blockchain explorers, Blockchain.info, has a public API exposing data about individual transactions as well as general Bitcoin market statistics. A python script queried Blockchain.info at a polite rate to gather 13146 training samples and then exported the data to a Matlab readable format. A Matlab script then curated the data into a matrix with the features listed in figure~\ref{features}. The feature set consists of (1) information pertaining to the individual beginning transactions, and (2) information about the bitcoin market statistics on the day of creation.
+
+
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/hist.png}
-\end{center}
-\caption{The histogram of collected UTXO lifespans with two regions magnified.}
-\label{hist}
-\end{figure}
-
-The feature set consists of (1) information pertaining to the individual beginning transactions, and (2) information about the bitcoin market statistics on the day of creation.
-
-We dummy coded the weekday with the reference day being Sunday. This created 6 new binary features, where each feature dictates whether the transaction occurred on a particular day. Sunday, the reference day, is represented by these 6 features being 0. The UNIX time of beginning transaction corresponded to the number of hours that occurred since the Epoch time, Thursday, 1 January, 1970. The 11th feature, transaction volume on creation date, corresponds to to the total number of unique Bitcoin transactions that occurred on the day of creation. The final three features are the three 2nd order polynomial parameters that fit the last week's USD to BTC conversion rate.
-
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.9\textwidth]{figures/features}
+\includegraphics[width=0.7\textwidth]{figures/features}
 \end{center}
 \caption{The features used as inputs to the classifier .}
 \label{features}
+\end{figure}
+
+
+
+We dummy coded the weekday with the reference day being Sunday. This created 6 new binary features, where each feature dictates whether the transaction occurred on a particular day. Sunday, the reference day, is represented by these 6 features being 0. The UNIX time of beginning transaction corresponded to the number of hours that occurred since the Epoch time, Thursday, 1 January, 1970. The 11th feature, transaction volume on creation date, corresponds to to the total number of unique Bitcoin transactions that occurred on the day of creation. The final three features are the three 2nd order polynomial parameters that fit the last week's USD to BTC conversion rate.
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{figures/hist.png}
+\end{center}
+\caption{The histogram of collected UTXO lifespans with two regions magnified.}
+\label{hist}
 \end{figure}
 
 
@@ -58,50 +63,73 @@ Two methods of doing this are either (1) entirely empirically or (2) based on a 
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/fits}
+\includegraphics[width=0.8\textwidth]{figures/fits}
 \end{center}
 \caption{Illustrated Explanation of a UTXO. An arbitrary amount of time may pass before Bob spends his UTXO.}
 \label{fits}
 \end{figure}
 
-The ten subdomains for each method are shown in tables~\ref{opt1} and~\ref{opt2} respectively.
+Tables~\ref{opt1} and~\ref{opt2} describe the ten subdomains with raw data and the fitted distribution respectively. Table~\ref{opt2} reveals that the fitted distribution does not sufficiently capture the heavy weighting towards 0 since 44\% of the data is falling into what we hoped was a 10\% probability domain. Keeping in mind that the goal of this subdomain split is to find a meaningful set of lables, the choice between the two options is up to which domains seem more meaningful to a future user. We created two classifiers -- one for each label set.
 
-\begin{center}
+\begin{table}
 \begin{tabular}{r||c|c|c|c|c|c|c|c|c|c}
 Upper Bound of Subdomain & 2 m & 10 m & 31 m & 80 m & 3 h & 7 h & 1 d & 3 d & 2 wk & $\infty$\\
 \% of Dataset in Subdomain & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10
-% \caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for empirically calculated subdomains.}
-\label{opt1}
 \end{tabular}
-\end{center}
+\caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for empirically calculated subdomains.}
+\label{opt1}
+\end{table}
 
-\begin{center}
+\begin{table}
 \begin{tabular}{r||c|c|c|c|c|c|c|c|c|c}
 Upper Bound of Subdomain & 2 h & 4 h & 6.5 h & 9.5 h & 12.5 h & 17.5 h & 1 d & 1.5 d & 2 wk & $\infty$\\
 \% of Dataset in Subdomain & 44 & 8 & 7 & 5 & 2 & 2 & 3 & 3 & 16 & 10
-% \caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for subdomains from a fitted distribution.}
-\label{opt2}
 \end{tabular}
-\end{center}
+\caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for subdomains from a fitted distribution.}
+\label{opt2}
+\end{table}
+
+We used two different classification algorithms: SVM with a (Gaussian) radial basis kernel and softmax regression. The SVM optimization problem is as follows~\cite{Ng:15,HCL:10,BoV:04}:
+\begin{align*}
+\min_{\gamma,w,b} & \frac{1}{2}||w||^2 + C \sum_{i=1}^{m}\xi_i \\
+s.t. & y^{(i)}(w^Tx^{(i)} + b) \ge 1 - \xi_i, \quad i = 1,...,m \\
+& \xi_i \ge 0, \quad i = 1,...,m
+\end{align*}
+With the kernel function $K(x,z) = \exp \left(-\frac{\|x-z\|^2}{2\sigma^2}\right)$. This kernel function implicitly moves the feature set to a high dimensional space where the optimal margin between classes is larger and better fit by a linear equation than in the original, low dimentional space. Softmax regression is a GLM that can be run on a multinomial dataset. In class we saw that if we dummy coded our labels (with one being a reference label), then we could express the multinomial distribution as a member of the exponential family. The softmax function, $\phi_i = \frac{e^{\eta_i}}{\sum_{j=1}^{k}e^{\eta_j}}$, where $\eta$ is the natural parameter and $k$ is the number of labels, is found to describe the conditional distribution of $y$ given $x$ : 
+\begin{align*}
+     p(y=i | x; \theta) &= \frac{e^{\eta_i}}{\sum_{j=1}^{k}e^{\eta_j}} =
+     \frac{e^{\theta_i^Tx}}{\sum_{j=1}^{k}e^{\theta_j^Tx}}
+\end{align*}
+With this conditional probablity we are able to estimate the probablity of a certain feature set falling into each category, $i$.
 
 
 \section{Results}
-
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/paramSearch}
+\includegraphics[width=0.7\textwidth]{figures/paramSearch}
 \end{center}
 \caption{Classifier performance vs $\gamma$ and $C$. One region of the broader heatmap is magnified for higher granularity.}
 \label{paramSearch}
 \end{figure}
 
+SVM performed significantly better than Softmax regression so this section highlights only the results of SVM on the empirically decided equal-probability labels. The parameters $\gamma$ and $C$ changed the predication accuracy as they varied so figure~\ref{paramSearch} highlights the process of first training and 5-fold validating on a rough range of the two, then zooming in for finer changes to find an ideal pair of values. 
+
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/error}
+\includegraphics[width=0.9\textwidth]{figures/accuracy}
 \end{center}
-\caption{Test and training error vs size of data set using 5-fold cross validation.}
-\label{error}
+\caption{The accuracy of the SVM classifier using empirical labels with the sequential addition of features and the training/test error vs dataset size.}
+\label{accuracy}
 \end{figure}
+
+Figure~\ref{accuracy} shows the training and test error with respect to training set size with the peak $\gamma$ and $C$ pair as well as the effect of each feature on prediction accuracy as the features are added in one by one.
+
+Since space is scarce, suffice to say we have corresponding plots of figures~\ref{paramSearch} and~\ref{accuracy} for the fitted-distribution-defined equal probability labels. The baseline accuracy (\ie predicting label 1 every time) is 44\% while the peak accuracy with all features present is about 95\%.
+
+\section{Conclusion \& Future Work}
+It would be interesting to study the stationarity (or lack-there-of) of the UTXO Lifespan distribution (\ie are typical spending habits varying over Bitcoin history?) Such information might help with finding a better fitting underlying distribution that would be more robust than relying on equal-probability binning of raw data. Similarly, attempting to model the underlying distribution as a mixture of Laplace distributions might make more sense than fitting a set of adjacent clusters with individual distributions. We started down that path and would like to acknowledge Junjie Qin's help but we were unable to bring it to a useful state. It would also be worth see how many equal-probability bins we can meaningfully classify into (the more the better). Finally, two interesting follow up projects would be to use this prediction tool to create expected volatility plots of the Bitcoin market or pairing this predictor with de-anonymizing tools to form individual spending models for clustered entities on the blockchain.
+
+\newpage
 
 \bibliography{btc-learning}
 
