@@ -4,8 +4,8 @@ function [] = plotDiagTrainingSet( perfTrain, perfTest, tsize)
     fontLabel = 15;
     fontTick  = 12;
     
-    width = 6;
-    height = 5;
+    width = 8;
+    height = 3;
     
     sizes = floor( (0.1:0.1:1) * tsize);
 

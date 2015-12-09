@@ -1,5 +1,5 @@
 addpath(genpath('.'))
-multinomialSize = 3; numLabels = 10;
+multinomialSize = 5; numLabels = 10;
 
 %% Load
 load 12022015.mat
@@ -38,8 +38,32 @@ plotCluster(y, pdf, idx, pdfs, phi, [6 7 8]);
 
 %% Define l equal-probability subdomains
 % labels = label(y, pdf, numLabels);
-[labels, domain, cdf, probEdges, domainEdges] = label(y,pdf,numLabels,'diagnostics',1);
-plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
+domainEdges = [0; y(round((1:numLabels-1)*length(y)/numLabels)); Inf];
+labels = discretize(y, domainEdges);
+
+disp('Domain Edges for actual')
+disp(domainEdges)
+disp('Fraction of labels in each bin for actual')
+for i=1:numLabels
+    disp(length(labels(labels == i)) / length(labels))
+end
+
+figure(9);
+clf
+plotHistByLabel(y, labels, histEdges(y, 1000))
+title('histogram colored by label', 'fontsize', 30, 'fontweight','normal')
+set(gca,'fontsize',30)
+
+[CDFlabels, domain, cdf, probEdges, domainEdges] = label(y,pdf,numLabels,'diagnostics',1);
+plotSubdomains(y, CDFlabels, domain, cdf, probEdges, domainEdges, [10 11]);
+
+disp('Domain Edges for modelled')
+disp(domainEdges)
+disp('Fraction of labels in each bin for modelled')
+for i=1:numLabels
+    disp(length(CDFlabels(CDFlabels == i)) / length(CDFlabels))
+end
+
 
 %% Train
 %svmModel = svm(x, y);
@@ -51,7 +75,8 @@ plotSubdomains(y, labels, domain, cdf, probEdges, domainEdges, [9 10]);
 dummyweekday = dummyvar(x(:,1));
 xdummy = [dummyweekday(:,2:end) x(:,2:end)];
 
-C = 2^(-13);
+C = 2^(-21);
+gamma = 2^(-16.5);
 % [mnTrain, mnPred] = multinomial(numLabels);
 % [svmLinTrain, svmLinPred] = svm('linear');
 % [svmPolyTrain, svmPolyPred] = svm('poly');
@@ -69,9 +94,8 @@ C = 2^(-13);
 %[ptest,  ptrain] = kfoldValidation(5, full(xlr), labels, mdlsTrain, mdlsPred);
 
 %% Find best C and gamma value for radial kernel svm (coarse)
-C = 2.^([20:0.5:22])
-gamma = 2.^([-18:0.5:-16])
-%gamma = 1/size(x,1);
+C = 2.^([10:3:25])
+gamma = 2.^([-20:3:-5])
 
 [pCorrectTest, pCorrectTrain] = ...
     optimalSVMParameters(xdummy, labels, 'radial', C, gamma);
