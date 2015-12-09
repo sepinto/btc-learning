@@ -15,6 +15,7 @@ function [out] = plotCluster(data, pdf, idx, pdfs, phi, fignums)
         
         subplot(1, k, l)
         histogram(clusterData, histEdges(clusterData, histBins),'Normalization', 'pdf')
+        set(get(gca,'child'),'EdgeColor', hex2rgb('8C1515')/256);
         
         hold on
         plot(domain(clusterData, domainGranularity), pdfs{l}(domain(clusterData, domainGranularity)), 'k', 'linewidth', 2)

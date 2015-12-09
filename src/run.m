@@ -1,5 +1,5 @@
 addpath(genpath('.'))
-multinomialSize = 5; numLabels = 10;
+multinomialSize = 6; numLabels = 10;
 
 %% Load
 load 12022015.mat

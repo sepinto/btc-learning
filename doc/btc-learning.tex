@@ -28,7 +28,7 @@ This project seeks to predict how long a TXO will remain unspent. More formally,
 
 
 \section{Dataset \& Features}
-By the nature of Bitcoin's internal structure, every node in the Bitcoin network has a full copy of the blockchain, which has every transaction that has ever occured. We used one of the (many) blockchain exploreres, specifically Blockchain.info, that have a public API exposing data about individual transactions as well as general Bitcoin market statistics. We used HTTP queries in python to gather 13146 training samples and then exported and curated the data in Matlab to gain the features we used during classification.  
+One of the (many) blockchain explorers, Blockchain.info, has a public API exposing data about individual transactions as well as general Bitcoin market statistics. A python script queried Blockchain.info at a polite rate to gather 13146 training samples and then exported the data to a Matlab readable format. A Matlab script then curated the data into a matrix with the features listed in figure~\ref{features}.
 
 \begin{figure}
 \begin{center}
@@ -38,16 +38,51 @@ By the nature of Bitcoin's internal structure, every node in the Bitcoin network
 \label{hist}
 \end{figure}
 
+The feature set consists of (1) information pertaining to the individual beginning transactions, and (2) information about the bitcoin market statistics on the day of creation.
 
-\section{Methods}
+We dummy coded the weekday with the reference day being Sunday. This created 6 new binary features, where each feature dictates whether the transaction occurred on a particular day. Sunday, the reference day, is represented by these 6 features being 0. The UNIX time of beginning transaction corresponded to the number of hours that occurred since the Epoch time, Thursday, 1 January, 1970. The 11th feature, transaction volume on creation date, corresponds to to the total number of unique Bitcoin transactions that occurred on the day of creation. The final three features are the three 2nd order polynomial parameters that fit the last week's USD to BTC conversion rate.
 
 \begin{figure}
 \begin{center}
-\includegraphics[width=0.9\textwidth]{figures/utxo}
+\includegraphics[width=0.9\textwidth]{figures/features}
+\end{center}
+\caption{The features used as inputs to the classifier .}
+\label{features}
+\end{figure}
+
+
+\section{Methods}
+As shown in figure~\ref{hist}, the tail of the UTXO Lifespan distribution is extremely long. As such, regression might lead to prediction errors that are large enough to remove their useful meaning. Classification into a finite set of lifespan bins (defined by ranges of time) clarifies this issue and provides more intuitive results. The trick, however, is to define useful, data-dependent time ranges. Hardcoding these based on eyeballing the distribution seemed meaningless so we chose to instead split the full domain into ten equal-probability ranges.
+
+Two methods of doing this are either (1) entirely empirically or (2) based on a fitted distribution. The former case is simply a matter of sorting the lifespan dataset and splitting it into ten equally sized groups. The latter requires more processing. Understanding that the data should show signs of a Laplace or exponential distribution based the standard application of those distributions, the first step was to cluster the lifespan set using k-median ($\ell_1$ penalty function) clustering. From there, we fitted either a Normal, Laplace, or Exponential (whichever was most likely) distribution to each cluster using maximum likelihood estimation and then formed a global distribution as a weighted sum. 
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/fits}
 \end{center}
 \caption{Illustrated Explanation of a UTXO. An arbitrary amount of time may pass before Bob spends his UTXO.}
-\label{utxo}
+\label{fits}
 \end{figure}
+
+The ten subdomains for each method are shown in tables~\ref{opt1} and~\ref{opt2} respectively.
+
+\begin{center}
+\begin{tabular}{r||c|c|c|c|c|c|c|c|c|c}
+Upper Bound of Subdomain & 2 m & 10 m & 31 m & 80 m & 3 h & 7 h & 1 d & 3 d & 2 wk & $\infty$\\
+\% of Dataset in Subdomain & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10 & 10
+% \caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for empirically calculated subdomains.}
+\label{opt1}
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{r||c|c|c|c|c|c|c|c|c|c}
+Upper Bound of Subdomain & 2 h & 4 h & 6.5 h & 9.5 h & 12.5 h & 17.5 h & 1 d & 1.5 d & 2 wk & $\infty$\\
+\% of Dataset in Subdomain & 44 & 8 & 7 & 5 & 2 & 2 & 3 & 3 & 16 & 10
+% \caption{Table of subdomain boundaries and the distribution of datapoints within subdomains for subdomains from a fitted distribution.}
+\label{opt2}
+\end{tabular}
+\end{center}
 
 
 \section{Results}
