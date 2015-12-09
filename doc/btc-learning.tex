@@ -4,7 +4,7 @@
 
 \input defs.tex
 
-\bibliographystyle{alpha}
+\bibliographystyle{ieeetr}
 
 \title{Bitcoin UTXO Lifespan Prediction}
 \author{Robert Konrad \& Stephen Pinto}
@@ -12,123 +12,62 @@
 \begin{document}
 \maketitle
 
-\section{Background \& Motivation} % (fold)
-\label{sec:motivation}
-We are predicting how long a UTXO will stay unspent. Services in the business of providing liquidity for their customers would benefit from knowing how long a customer might leave some amount of BTC unspent.
+\section{Background \& Motivation}
+The Bitcoin crypto currency~\cite{Na08}, born in 2009, still maintains its position as the most widely used and highly valued digital currency in existence. Every day sees thousands of transactions added to the blockchain. The blockchain is a global, agreed-upon ledger of every transaction that has ever occured and is continually extended as a single linked list. Each transaction in the blockchain, say Alice paying Bob 10 BTC, has one or more transaction outputs (TXO) which serve as sums of spendable BTC. These unspent sums are called \emph{Unspent Transaction Outputs} (UTXO). They remain UTXOs until the owner (Bob in our example) redeems them to pay someone else (at which time they are referred to as spent TXOs).
 
-At the start of some day, a company could pull up the 10 most likely utxos to be spent. Why is that useful?
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.7\textwidth]{figures/utxo}
+\end{center}
+\caption{Illustrated Explanation of a UTXO. An arbitrary amount of time may pass before Bob spends his UTXO.}
+\label{utxo}
+\end{figure}
 
-\section{Initial Exploration}
-
-
-\section{Clustering}
-
-\section{Classification}
-
-\section{EM for Laplacian Mixture}
-Consider a model for the set of $m$ unlabelled samples $\left\{ x^{(1)}, \dots, x^{(m)} \right\}$. Underlying each sample is a latent random variable $z^{(i)}$ with 
-\begin{equation}
-\label{z}
-z^{(i)} \sim \text{Multinomial}_k(\phi)
-\end{equation}
-and
-\begin{equation}
-\label{z}
-x^{(i)} | z^{(i)} = j \sim \text{Laplace}(\mu_j, b_j > 0) = \frac{1}{2 b_j} \exp \left( - \frac{| x^{(i)} - \mu_j |}{b_j} \right).
-\end{equation}
-As is standard with the EM derivation, we are trying to maximize the log likelihood function
-\[
-\ell \left( \theta \right) = \sum_i \log \left[ \sum_{z^{(i)}} Q_i(z^{(i)}) \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})} \right]
-\]
-with parameters $\theta = [\phi\ \mu\ b]^T$ by using a lower bound from Jensen's inequality
-\[
-\ell \left( \theta \right) \geq \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})}.
-\]
-Given some initial $\theta$, the E step creates the tightest bound possible by setting
-\[
-Q_i(z^{(i)}) = p(z^{(i)} | x^{(i)} ; \theta) = \omega_j^{(i)} = \frac{p(x^{(i)} | z^{(i)} ; \mu, b) p(z^{(i)} ; \phi)}{\sum_{l} p(x^{(i)} | z^{(i)} = l ; \mu_l, b_l) \phi_l}.
-\]
-This is straightforward to calculate. With the function $Q_i(z^{(i)})$ set, the M step is
-\[
-\theta := \argmax_{\theta} \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \frac{p(x^{(i)}, z^{(i)} ; \theta)}{Q_i(z^{(i)})}
-\]
-which, immediately removing terms that don't depend on $\theta$, is equivalent to
-\[
-\theta := \argmax_{\theta} \sum_i \sum_{z^{(i)}} Q_i(z^{(i)}) \log  \left[ p(x^{(i)} | z^{(i)} ; \mu, b) p( z^{(i)} ; \phi) \right].
-\]
-As derived in the book, we easily get
-\begin{equation}
-\label{phiUpdate}
-\phi_j := \frac{1}{m} \sum_{i=1}^{m} \omega_j^{(i)}.
-\end{equation}
-Plugging in our Laplace PDF in order to find the update rules for $\mu$ and $b$, we get
-\[
-\mu, b := \argmin_{\mu, b} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left( \frac{|x^{(i)} - \mu_j|}{b_j} + \log b_j \right)
-\]
-Note that this expression is not convex in b. $\log b_j$ is concave and $1/b_j$ is convex so the sum of the two is neither. Multiplying by 2, the equivalent expression
-\[
-\mu, b := \argmin_{\mu, b} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left(  \frac{2 |x^{(i)} - \mu_j|}{s_j} + \log b_j^2 \right)
-\]
-solves this with a change of variables $s = -b$, becoming
-\[
-\mu, s := \argmin_{\mu, s} \sum_{i=1}^m \sum_{j=1}^k \omega_j^{(i)} \left(  \frac{- 2 |x^{(i)} - \mu_j|}{s_j} + \log s_j^2 \right).
-\]
-Ignoring the constraint $s \prec 0$ for one moment and just setting the derivative of this expression with respect to $s_j$ to zero gives
-\[
-\frac{\partial \left[\ \cdot\ \right]}{\partial s_j} = \sum_i \omega_j^{(i)} \left( \frac{1}{s_j} + \frac{|x^{(i)} - \mu_l|}{s_j^2} \right) = 0.
-\]
-Solving for $s_j$ yields
-\[
-s_j := - \frac{\sum_i \omega_j^{(i)} | x^{(i)} - \mu_j|}{\sum_i \omega_j^{(i)}}
-\]
-and, equivalently,
-\begin{equation}
-\label{sUpdate}
-b_j := \frac{\sum_i \omega_j^{(i)} | x^{(i)} - \mu_j|}{\sum_i \omega_j^{(i)}}.
-\end{equation}
-Note that this value will always be less than zero, so our constraint is taken care of.
-
-With $\phi$ taken care of and an expression for $b$ in hand, that leaves just 
-\[
-\mu := \argmin_\mu \sum_i \sum_j \frac{\omega_j^{(i)}}{b_j} | x^{(i)} - \mu_j |.
-\]
-Clearly the optimal $\mu_j$ does not depend on $b_j$, so we can consider the simpler expression
-\[
-\mu := \argmin_\mu \sum_i \sum_j \omega_j^{(i)} | x^{(i)} - \mu_j |.
-\]
-As with all the other parameters so far, this expression is separable with respect to elements of $\mu$. That is, we can say
-\[
-\mu_j := \argmin_{\mu_j} \sum_i \omega_j^{(i)} | x^{(i)} - \mu_j |
-\]
-Setting the partial to zero gives us
-\[
-\sum_i \omega_j^{(i)} \ones \left\{ \mu_j > x^{(i)} \right\} = \sum_i \omega_j^{(i)} \ones \left\{ \mu_j < x^{(i)} \right\}.
-\]
- 
-
-\textbf{THIS IS INCORRECT.} See notes below from Junjie.
-
-Instead of setting the derivative to 0, you can use the sign of the derivative to determine whether the function is decreasing or increasing. For instance, you can show that f is decreasing if
-\[
-\sum \omega_j^{(i)} \ones\{\mu < x^{(i)}\} > \sum \omega_j^{(i)} \ones \{ \mu > x^{(i)} \},
-\]
-and increasing if the inequality is flipped. In fact, you can show that the function is convex so that f' is monotone and hence you can pick $\mu^\star$ to be the smallest point such that $f'(\mu)$ changes its sign (i.e. from negative to positive). Observing that
-\[
-\ones \{ \mu < x^{(i)} \} = 1- \ones \{ \mu \geq x^{(i)} \}, 
-\]
-and if the data is sorted such that $x^{(1)} \leq \dots \leq x^{(m)}$, we can set $\mu^\star = x^{(k)}$, where k is the smallest index such that 
-\[
-\sum_{i=1}^{k-1} \omega_j^{(i)} < 0.5 \sum_{i=1}^n \omega_j^{(i)},
-\]
-(i.e. the function is decreasing on the left side of $\mu^\star$), and
-\[
-\sum_{i=1}^{k} \omega_j^{(i)} 
-\geq 0.5 \sum_{i=1}^n \omega_j^{(i)},
-\]
-(i.e. the function is nondecreasing on the right side of $\mu^\star$).
+This project seeks to predict how long a TXO will remain unspent. More formally, given some information about the beginning transaction which created the UTXO and some information about the Bitcoin market on the day of its creation, this project predicts which of ten broad time scales the UTXO lifespan will fall into. This predictor could inform broader applications such as anomaly/fraud detection, trade volume and volatility prediction, and individual spending habit modelling. The Bitcoin industry is worth billions of dollars and growing rapidly. Possible insights into the previosly mentioned topics would be of use to any number of financial institutions involved in the future of cryptocurrencies. 
 
 
 
-\bibliography{template}
+\section{Dataset \& Features}
+By the nature of Bitcoin's internal structure, every node in the Bitcoin network has a full copy of the blockchain, which has every transaction that has ever occured. We used one of the (many) blockchain exploreres, specifically Blockchain.info, that have a public API exposing data about individual transactions as well as general Bitcoin market statistics. We used HTTP queries in python to gather 13146 training samples and then exported and curated the data in Matlab to gain the features we used during classification.  
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/hist.png}
+\end{center}
+\caption{The histogram of collected UTXO lifespans with two regions magnified.}
+\label{hist}
+\end{figure}
+
+
+\section{Methods}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/utxo}
+\end{center}
+\caption{Illustrated Explanation of a UTXO. An arbitrary amount of time may pass before Bob spends his UTXO.}
+\label{utxo}
+\end{figure}
+
+
+\section{Results}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/paramSearch}
+\end{center}
+\caption{Classifier performance vs $\gamma$ and $C$. One region of the broader heatmap is magnified for higher granularity.}
+\label{paramSearch}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{figures/error}
+\end{center}
+\caption{Test and training error vs size of data set using 5-fold cross validation.}
+\label{error}
+\end{figure}
+
+\bibliography{btc-learning}
 
 \end{document}
